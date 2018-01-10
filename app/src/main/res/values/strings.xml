@@ -1,0 +1,67 @@
+<resources>
+    <string name="app_name">Trac Nghiem - KHCB</string>
+
+    <!-- Start string value for text view -->
+    <string name="register_textview_click"><u>Đăng ký</u></string>
+    <string name="empty_text">""</string>
+    <string name="no_account_text">Bạn chưa có tài khoản?</string>
+    <string name="result_text">KẾT QUẢ</string>
+    <string name="suggest_text">Click vào câu hỏi để xem chi tiết</string>
+    <string name="test_text">This is a text view</string>
+    <string name="resgister_textview_title">ĐĂNG KÝ TÀI KHOẢN</string>
+    <string name="test_radio_button">This is a radio button</string>
+    <string name="score_title">ĐIỂM SỐ</string>
+    <string name="total_time_title">TỔNG THỜI GIAN</string>
+    <string name="user_info_title">THÔNG TIN CÁ NHÂN</string>
+    <string name="current_question">00/00</string>
+    <!-- End string value for text view -->
+
+    <!-- Start string value for button -->
+    <string name="login_button">ĐĂNG NHẬP</string>
+    <string name="register_button">ĐĂNG KÝ</string>
+    <string name="backward_button">TRỞ LẠI</string>
+    <string name="exit_button">THOÁT</string>
+    <string name="submit_exams">NỘP</string>
+    <string name="start_button">BẮT ĐẦU THI</string>
+    <string name="restart_button">THI LẠI</string>
+    <string name="next_button">KẾ TIẾP</string>
+    <string name="save_button">LƯU LẠI</string>
+    <!-- End string value for button -->
+
+    <!-- Start string value for choser question package -->
+    <string name="chose_package_1">ĐỀ NGẪU NHIÊN</string>
+    <string name="chose_package_2">ĐỀ CÓ SẴN</string>
+    <!-- End string value for choser question package -->
+
+    <!-- Start hint value for login layout -->
+    <string name="login_1">Tên đăng nhập</string>
+    <string name="login_2">Mật khẩu</string>
+    <!-- End hint value for login layout -->
+
+    <!-- Start hint value for register layout -->
+    <string name="register_1">Tên đăng nhập (*)</string>
+    <string name="register_2">Mật khẩu (*)</string>
+    <string name="register_3">Họ và tên (*)</string>
+    <string name="register_4">Số CMND</string>
+    <string name="register_5">Trường</string>
+    <string name="register_6">Lớp</string>
+    <string name="register_7">Tỉnh</string>
+    <string name="register_8">Quận/huyện</string>
+    <string name="register_9">Phường/xã</string>
+    <!-- End hint value for register layout -->
+
+
+    <!-- Start string value for menu item -->
+    <string name="menu_item_1">Thông tin cá nhân</string>
+    <string name="menu_item_2">Đăng xuất</string>
+    <!-- End string value for menu item -->
+    
+    
+    
+    <string name="introduce">
+        Đây là ứng dụng thi trắc nghiệm thuộc Khoa Khoa học cơ bản của Đại học
+        Trà Vinh.
+    </string>
+
+
+</resources>

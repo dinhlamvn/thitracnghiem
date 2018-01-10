@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:padding="5dp"
+        android:scaleY="1.5"
+        android:text="@string/user_info_title"
+        android:textColor="@android:color/holo_red_dark"
+        android:textScaleX="1.5"
+        android:textSize="18sp" />
+
+    <ScrollView
+        android:id="@+id/scroll_main"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView8"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:paddingEnd="3dp"
+                android:paddingStart="3dp"
+                android:text="@string/register_1" />
+
+            <EditText
+                android:id="@+id/itext_account"
+                style="@style/Widget.AppCompat.EditText"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:background="@android:drawable/editbox_background"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:labelFor="@+id/itext_password"
+                android:text="@string/empty_text"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/textView9"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:paddingEnd="3dp"
+                android:paddingStart="3dp"
+                android:text="@string/register_2" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/itext_password"
+                    style="@style/Widget.AppCompat.EditText"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@android:drawable/editbox_background"
+                    android:ems="10"
+                    android:inputType="textPersonName|textPassword"
+                    android:labelFor="@+id/itext_username"
+                    android:text="@string/empty_text"
+                    android:textSize="15sp" />
+
+                <Button
+                    android:id="@+id/btn_edit_pass"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:background="@android:drawable/btn_default_small"
+                    android:drawableStart="@android:drawable/ic_menu_edit" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/textView10"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:paddingEnd="3dp"
+                android:paddingStart="3dp"
+                android:text="@string/register_3" />
+
+            <EditText
+                android:id="@+id/itext_username"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:background="@android:drawable/editbox_background"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:labelFor="@+id/itext_identity"
+                android:text="@string/empty_text"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/textView11"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:paddingEnd="3dp"
+                android:paddingStart="3dp"
+                android:text="@string/register_4" />
+
+            <EditText
+                android:id="@+id/itext_identity"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:background="@android:drawable/editbox_background"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:labelFor="@+id/itext_school"
+                android:text="@string/empty_text"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/textView12"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:paddingEnd="3dp"
+                android:paddingStart="3dp"
+                android:text="@string/register_5" />
+
+            <EditText
+                android:id="@+id/itext_school"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:layout_weight="1"
+                android:background="@android:drawable/editbox_background"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:labelFor="@+id/itext_classes"
+                android:text="@string/empty_text"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/textView13"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:paddingEnd="3dp"
+                android:paddingStart="3dp"
+                android:text="@string/register_6" />
+
+            <EditText
+                android:id="@+id/itext_classes"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:layout_weight="1"
+                android:background="@android:drawable/editbox_background"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:labelFor="@+id/itext_province"
+                android:text="@string/empty_text"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/textView14"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:paddingEnd="3dp"
+                android:paddingStart="3dp"
+                android:text="@string/register_7" />
+
+            <EditText
+                android:id="@+id/itext_province"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:background="@android:drawable/editbox_background"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:labelFor="@+id/itext_district"
+                android:text="@string/empty_text"
+                android:textSize="15sp" />
+
+
+            <TextView
+                android:id="@+id/textView15"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:paddingEnd="3dp"
+                android:paddingStart="3dp"
+                android:text="@string/register_8" />
+
+            <EditText
+                android:id="@+id/itext_district"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:layout_weight="1"
+                android:background="@android:drawable/editbox_background"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:labelFor="@+id/itext_village"
+                android:text="@string/empty_text"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/textView16"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:paddingStart="3dp"
+                android:text="@string/register_9"
+                android:paddingEnd="3dp" />
+
+            <EditText
+                android:id="@+id/itext_village"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginStart="0dp"
+                android:layout_weight="1"
+                android:background="@android:drawable/editbox_background"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:labelFor="@+id/itext_account"
+                android:text="@string/empty_text"
+                android:textSize="15sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="10dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_save"
+                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:background="@android:drawable/btn_default"
+                    android:drawableStart="@drawable/icon_save"
+                    android:text="@string/save_button" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
