@@ -1,8 +1,11 @@
 package activity;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -14,10 +17,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.administrator.thitracnghiem.R;
@@ -28,8 +33,10 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -52,7 +59,10 @@ public class DashboardActivity extends AppCompatActivity {
     private TextView tvTotalTime;
     private List<Result> results;
 
-    private static String examsGroupId;
+    private String examsGroupId;
+    private ArrayList<String> qg;
+
+    private Intent intent;
 
     private int score = 0;
     private int totalTime = 0;
@@ -64,6 +74,11 @@ public class DashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dashboard);
 
         initComponents();
+
+        if (intent != null) {
+            examsGroupId = intent.getStringExtra("exams_group_id");
+            qg = intent.getStringArrayListExtra("qg");
+        }
 
         if (!Values.CURRENT_USER.equals("")) {
             new LoadResultTask().execute();
@@ -77,9 +92,26 @@ public class DashboardActivity extends AppCompatActivity {
         grvDashboard.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                QuestionInfoAcitivity.setQuestionId(results.get(i).getQuestionId());
-                Intent intent = new Intent(DashboardActivity.this, QuestionInfoAcitivity.class);
-                startActivity(intent);
+                final Dialog dialog = new Dialog(DashboardActivity.this);
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setCancelable(false);
+                dialog.setContentView(R.layout.dialog_guide);
+
+                String a = String.valueOf(results.get(i).getQuestionId());
+                String b = String.valueOf(results.get(i).getQuestionGroupId());
+
+                final Button btnOk = dialog.findViewById(R.id.btn_ok);
+                final ImageView imageView1 = dialog.findViewById(R.id.img_question);
+                final ImageView imageView2 = dialog.findViewById(R.id.img_guide);
+                new LoadGuideSrcTask(imageView1, imageView2).execute(a, b);
+                btnOk.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
+
             }
         });
 
@@ -145,10 +177,7 @@ public class DashboardActivity extends AppCompatActivity {
         btnReContest = findViewById(R.id.btn_restart);
         tvScore = findViewById(R.id.tv_score);
         tvTotalTime = findViewById(R.id.tv_total_time);
-    }
-
-    public static void setExamsGroupId(String examsGroupId) {
-        DashboardActivity.examsGroupId = examsGroupId;
+        intent = getIntent();
     }
 
     private void createResultList(JSONArray jsonArray) {
@@ -159,6 +188,7 @@ public class DashboardActivity extends AppCompatActivity {
                 JSONObject object = jsonArray.getJSONObject(i);
                 Result result = new Result();
                 result.setQuestionId(object.getInt("question_id"));
+                result.setQuestionGroupId(object.getInt("question_group_id"));
                 result.setStatus((object.getInt("result") == 1 ) ? "Đúng":"Sai");
                 result.setTimeAnswer(object.getInt("time"));
                 score = score + object.getInt("result");
@@ -172,18 +202,35 @@ public class DashboardActivity extends AppCompatActivity {
 
     private void doAfterLoadResult() {
         tvScore.setText(String.valueOf(score) + "/" + Values.NUM_OF_QUESTION);
-        tvTotalTime.setText(String.valueOf(totalTime) + "s");
+        tvTotalTime.setText(toTimeFormat(totalTime));
         fillData();
     }
 
+    private String toTimeFormat(int time) {
+        String minutes = String.valueOf(time / 60);
+        String seconds = String.valueOf(time % 60);
+
+        if (minutes.length() == 1) minutes = "0" + minutes;
+        if (seconds.length() == 1) seconds = "0" + seconds;
+
+        return minutes + ":" + seconds;
+    }
 
     private void fillData() {
         ArrayList<Result> rs = new ArrayList<Result>();
+        for (String item: qg) {
+            String[] m = item.split(",");
+            for (Result rss : results) {
+                String a = String.valueOf(rss.getQuestionId());
+                String b = String.valueOf(rss.getQuestionGroupId());
 
-        for (Result rss : results) {
-            rs.add(rss);
+                if (a.equals(m[0]) && b.equals(m[1])) {
+                    rs.add(rss);
+                    break;
+                }
+            }
         }
-
+        results = new ArrayList<>(rs);
         ResultAdapter resultAdapter = new ResultAdapter(this, rs);
 
         grvDashboard.setAdapter(resultAdapter);
@@ -249,7 +296,7 @@ public class DashboardActivity extends AppCompatActivity {
                 StringBuilder sb = new StringBuilder();
 
                 sb.append(URLEncoder.encode("exams_group_id", "UTF-8") + "=" + URLEncoder.encode(examsGroupId, "UTF-8"));
-                sb.append("&" + URLEncoder.encode("icon_user_menu", "UTF-8") + "=" + URLEncoder.encode(Values.CURRENT_USER, "UTF-8"));
+                sb.append("&" + URLEncoder.encode("user", "UTF-8") + "=" + URLEncoder.encode(Values.CURRENT_USER, "UTF-8"));
 
                 String http = Values.DB_HOST + "/get-result";
                 URL url = new URL(http);
@@ -291,6 +338,106 @@ public class DashboardActivity extends AppCompatActivity {
             createResultList(jsonArray);
 
             doAfterLoadResult();
+        }
+    }
+
+    private class LoadGuideSrcTask extends AsyncTask<String, Void, String> {
+
+
+        private ImageView imageView1;
+        private ImageView imageView2;
+
+        public LoadGuideSrcTask(ImageView imageView1, ImageView imageView2) {
+            this.imageView1 = imageView1;
+            this.imageView2 = imageView2;
+        }
+
+
+        @Override
+        protected String doInBackground(String... strings) {
+
+            URLConnection connection = null;
+            BufferedReader reader = null;
+
+            try {
+
+                StringBuilder sb = new StringBuilder();
+
+                sb.append(URLEncoder.encode("question_id", "UTF-8") + "=" + URLEncoder.encode(strings[0], "UTF-8"));
+                sb.append("&" + URLEncoder.encode("question_group_id", "UTF-8") + "=" + URLEncoder.encode(strings[1], "UTF-8"));
+
+
+                String http = Values.DB_HOST + "/get-guide";
+                URL url = new URL(http);
+                connection = url.openConnection();
+                connection.setDoOutput(true);
+                OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+                writer.write(sb.toString());
+                writer.flush();
+
+                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String reponse = null;
+                reponse = reader.readLine();
+
+                return reponse;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            String[] m = s.split(",");
+            new ImageLoadTask(m[0], this.imageView1).execute();
+            new ImageLoadTask(m[1], this.imageView2).execute();
+
+        }
+    }
+
+
+    private class ImageLoadTask extends AsyncTask<Void, Void, Bitmap> {
+
+
+        private String url;
+
+        private ImageView imageView;
+
+        public ImageLoadTask(String url, ImageView imageView) {
+            this.url = url;
+            this.imageView = imageView;
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... voids) {
+
+            try {
+
+                URL url = new URL(Values.RESOURCE_HOST + "/" + this.url);
+
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.connect();
+
+                InputStream inputStream = connection.getInputStream();
+
+                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                return bitmap;
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            this.imageView.setImageBitmap(bitmap);
         }
     }
 

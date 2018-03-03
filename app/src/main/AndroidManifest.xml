@@ -22,10 +22,13 @@
         <activity android:name="activity.ContestActivity"
             android:configChanges="orientation|screenSize" />
         <activity android:name="activity.DashboardActivity"/>
-        <activity android:name="activity.QuestionInfoAcitivity" />
         <activity android:name="activity.UserInfoActivity" />
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
 
 </manifest>

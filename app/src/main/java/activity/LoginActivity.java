@@ -1,3 +1,4 @@
+
 package activity;
 
 import android.app.AlertDialog;
@@ -38,21 +39,23 @@ public class LoginActivity extends AppCompatActivity {
     private EditText textPassword;
     private Button btnLogin;
     private Button btnBack;
-    private TextView vtextRegister;
+    private TextView ctvRegister;
 
 
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    	super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
         initComponents();
 
+        getSharedPreferences(Values.PREFS_NAME, MODE_PRIVATE).edit().remove("user").apply();
+
         btnLogin.setOnClickListener(btnLogin_Clicked);
         btnBack.setOnClickListener(btnBack_Clicked);
-        vtextRegister.setOnClickListener(vtextRegister_Clicked);
+        ctvRegister.setOnClickListener(ctvRegister_Clicked);
     }
 
     private void initComponents() {
@@ -60,7 +63,7 @@ public class LoginActivity extends AppCompatActivity {
         textPassword = findViewById(R.id.itext_password);
         btnLogin = findViewById(R.id.btn_login);
         btnBack = findViewById(R.id.btn_back);
-        vtextRegister = findViewById(R.id.vtext_register);
+        ctvRegister = findViewById(R.id.ctv_register);
     }
 
 
@@ -86,12 +89,12 @@ public class LoginActivity extends AppCompatActivity {
         }
     };
 
-    View.OnClickListener vtextRegister_Clicked = new View.OnClickListener() {
-        @Override 
+    View.OnClickListener ctvRegister_Clicked = new View.OnClickListener() {
+        @Override
         public void onClick(View view) {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity(intent);
-        } 
+        }
     };
 
 
@@ -115,6 +118,9 @@ public class LoginActivity extends AppCompatActivity {
             dialog.show();
         } else if (status.equals("unexisted")) {
             AlertDialog dialog = createNotifyDialog("Thông báo", "Tài khoản không tồn tại.");
+            dialog.show();
+        } else if (status.equals("error connect")) {
+            AlertDialog dialog = createNotifyDialog("Cảnh báo", "Lỗi kết nối.");
             dialog.show();
         } else {
             Values.CURRENT_USER = status.split(",")[1];
@@ -177,10 +183,8 @@ public class LoginActivity extends AppCompatActivity {
                 return response;
 
             } catch (IOException e) {
-                e.printStackTrace();
+                return "error connect";
             }
-
-            return null;
         }
 
         @Override

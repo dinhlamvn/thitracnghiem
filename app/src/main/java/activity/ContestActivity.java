@@ -1,25 +1,33 @@
 package activity;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import com.example.administrator.thitracnghiem.MainActivity;
 import com.example.administrator.thitracnghiem.R;
 
 import org.json.JSONArray;
@@ -28,8 +36,10 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -44,12 +54,11 @@ import data.Values;
  * Created by Administrator on 1/5/2018.
  */
 
-public class ContestActivity extends AppCompatActivity{
+public class ContestActivity extends AppCompatActivity {
 
 	private Button btnForward;
 	private Button btnFinish;
 	private TextView tvCurrentQuestionIndex;
-	private TextView tvCurrentQuestionText;
 	private TextView tvTimer;
 	private TextView tvCorrect;
 	private TextView tvIncorrect;
@@ -58,15 +67,21 @@ public class ContestActivity extends AppCompatActivity{
 	private RadioButton rbtnChose3;
 	private RadioButton rbtnChose4;
 	private RadioGroup rbtnGroup;
+	private RadioGroup rbtnGroup2;
+	private ImageView imgvQuestion;
 
 	private List<Question> questions;
 	private List<Answer> answers;
 	private int currentIndex = 0;
 	private int correct = 0;
 	private int time = 0;
+	private int maxTime = 1800;
 	private boolean isFinish = false;
 
-	private PostResultTask postResultTask;
+	private boolean isLoadQuestion = true;
+
+	private ArrayList<String> qg;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -75,16 +90,41 @@ public class ContestActivity extends AppCompatActivity{
 
         initComponents();
 
-        postResultTask = new PostResultTask();
-
         updateTime();
 
 		new LoadQuestionTask().execute();
 		btnForward.setOnClickListener(btnForward_Clicked);
 		btnFinish.setOnClickListener(btnFinish_Clicked);
 
+
+
+		rbtnGroup.setOnCheckedChangeListener(listener1);
+		rbtnGroup2.setOnCheckedChangeListener(listener2);
+
+
     }
 
+    private RadioGroup.OnCheckedChangeListener listener1 = new RadioGroup.OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(RadioGroup radioGroup, int i) {
+			if (i != -1) {
+				rbtnGroup2.setOnCheckedChangeListener(null);
+				rbtnGroup2.clearCheck();
+				rbtnGroup2.setOnCheckedChangeListener(listener2);
+			}
+		}
+	};
+
+    private RadioGroup.OnCheckedChangeListener listener2 = new RadioGroup.OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(RadioGroup radioGroup, int i) {
+			if (i != -1) {
+				rbtnGroup.setOnCheckedChangeListener(null);
+				rbtnGroup.clearCheck();
+				rbtnGroup.setOnCheckedChangeListener(listener1);
+			}
+		}
+	};
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -119,12 +159,67 @@ public class ContestActivity extends AppCompatActivity{
 		}
 	}
 
+
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-
 	}
 
+	@Override
+	public void onBackPressed() {
+		AlertDialog dialog = new AlertDialog.Builder(ContestActivity.this)
+				.setTitle("Cảnh báo")
+				.setMessage("Bạn đang thi, bạn thật sự muốn thoát?")
+				.setCancelable(false)
+				.setPositiveButton("Có", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialogInterface, int i) {
+						handlerLoadQuestion.removeCallbacksAndMessages(null);
+						Intent intent = new Intent(ContestActivity.this, ChoserActivity.class);
+						startActivity(intent);
+						ContestActivity.this.finish();
+					}
+				})
+				.setNegativeButton("Không", null)
+				.create();
+		dialog.show();
+	}
+
+
+	Handler handlerLoadQuestion = new Handler(new Handler.Callback() {
+		@Override
+		public boolean handleMessage(Message message) {
+			return false;
+		}
+	});
+
+    Runnable runnableLoadQuestion = new Runnable() {
+		@Override
+		public void run() {
+			AlertDialog dialog = new AlertDialog.Builder(ContestActivity.this)
+					.setTitle("Thông báo")
+					.setMessage("Quá thời gian phản hồi từ server.")
+					.setCancelable(false)
+					.setPositiveButton("Khởi động lại ứng dụng", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialogInterface, int i) {
+							Values.CURRENT_USER = "";
+							Intent intent = new Intent(ContestActivity.this, MainActivity.class);
+							startActivity(intent);
+							ContestActivity.this.finish();
+						}
+					})
+					.setNegativeButton("Tải câu hỏi lại", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialogInterface, int i) {
+							isLoadQuestion = true;
+							new LoadQuestionTask().execute();
+						}
+					})
+					.create();
+			dialog.show();
+		}
+	};
 
 	private void _info() {
     	Intent intent = new Intent(ContestActivity.this, UserInfoActivity.class);
@@ -142,17 +237,13 @@ public class ContestActivity extends AppCompatActivity{
 	private void showQuestion() {
     	if (currentIndex == Values.NUM_OF_QUESTION - 1) {
     		btnForward.setText("HOÀN THÀNH");
+    		btnForward.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
 		}
 
     	if (!isFinish) {
-			resetChose();
 			Question q = questions.get(currentIndex);
 			tvCurrentQuestionIndex.setText(String.valueOf(currentIndex + 1 ) + "/" + Values.NUM_OF_QUESTION);
-			tvCurrentQuestionText.setText(q.getQuestion());
-			rbtnChose1.setText(q.getChose1());
-			rbtnChose2.setText(q.getChose2());
-			rbtnChose3.setText(q.getChose3());
-			rbtnChose4.setText(q.getChose4());
+			new ImageDownLoadTask(q.getQuestion(), imgvQuestion).execute();
 			tvCorrect.setText(String.valueOf(correct));
 			tvIncorrect.setText(String.valueOf(currentIndex - correct));
 		}
@@ -173,8 +264,6 @@ public class ContestActivity extends AppCompatActivity{
     	final Handler h = new Handler(new Handler.Callback() {
     		@Override 
     		public boolean handleMessage(Message msg) {
-    			time = time + 1;
-    			tvTimer.setText("" + time);
     			return false;
     		}
     	});
@@ -184,18 +273,41 @@ public class ContestActivity extends AppCompatActivity{
 			public void run() {
 				if (!isFinish) {
 					time = time + 1;
+					maxTime = maxTime - 1;
 					updateTime();
-					h.postDelayed(this, 1000);
+					if (maxTime == 0) {
+						isFinish = true;
+						AlertDialog.Builder builder = new AlertDialog.Builder(ContestActivity.this)
+								.setTitle("Thông báo")
+								.setMessage("Bạn đã hết thời gian làm bài.")
+								.setCancelable(false)
+								.setNegativeButton("NỘP", new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialogInterface, int i) {
+										new PostResultTask().execute();
+									}
+								});
+						AlertDialog dialog = builder.create();
+						dialog.show();
+					} else {
+						h.postDelayed(this, 1000);
+					}
+
 				} else {
 					onStop();
 				}
 			}
 		}, 1000);
-
     }
 
+    private void onLoadQuestion(final ProgressDialog progressDialog) {
+
+    	handlerLoadQuestion.postDelayed(runnableLoadQuestion, 5000);
+	}
+
     private void doAfterPostResult(String result) {
-    	if (result.equals("success")) {
+
+		if (result.equals("success")) {
     		AlertDialog.Builder builder = new AlertDialog.Builder(ContestActivity.this);
     		builder.setTitle("Thông báo");
     		builder.setMessage("Cập nhật kết quả thành công.");
@@ -203,34 +315,108 @@ public class ContestActivity extends AppCompatActivity{
     		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialogInterface, int i) {
-					DashboardActivity.setExamsGroupId(questions.get(0).getExamsGroup());
-					Intent intent = new Intent(ContestActivity.this, DashboardActivity.class);
-					startActivity(intent);
-					ContestActivity.this.finish();
+					if (correct >= 15) {
+						Dialog dialog = new Dialog(ContestActivity.this);
+						dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+						dialog.setCancelable(false);
+						dialog.setContentView(R.layout.dialog_update_best_user);
+						dialog.show();
+						final TextView tvTitle = dialog.findViewById(R.id.tv_title);
+						final TextView tvMessage = dialog.findViewById(R.id.tv_message);
+						final EditText edtEmail = dialog.findViewById(R.id.edt_email);
+						final EditText edtPhone = dialog.findViewById(R.id.edt_phone);
+						final Button btnSubmit = dialog.findViewById(R.id.btn_submit);
+
+						tvTitle.setText("Chúc mừng");
+						tvMessage.setText("Bạn đã vượt qua kỳ thi online." +
+							"Hãy để lại thông tin để chúng tôi liên hệ bạn.");
+
+						btnSubmit.setOnClickListener(new View.OnClickListener() {
+							@Override
+							public void onClick(View view) {
+								String a = edtEmail.getText().toString();
+								String b = edtPhone.getText().toString();
+								if (a.isEmpty() &&
+										b.isEmpty()) {
+									AlertDialog.Builder builder1 = new AlertDialog.Builder(ContestActivity.this)
+											.setTitle("Thông báo")
+											.setMessage("Hãy nhập vào thông tin liên hệ")
+											.setCancelable(true)
+											.setNegativeButton("OK", null);
+									AlertDialog dialog1 = builder1.create();
+									dialog1.show();
+								} else {
+									new PostEmailAndPhone().execute(a, b);
+								}
+							}
+						});
+					} else {
+						Intent intent = new Intent(ContestActivity.this, DashboardActivity.class);
+						intent.putExtra("exams_group_id", questions.get(0).getExamsGroup());
+						intent.putStringArrayListExtra("qg", qg);
+						startActivity(intent);
+						ContestActivity.this.finish();
+					}
+
+
 				}
 			});
     		AlertDialog dialog = builder.create();
     		dialog.show();
-		} else {
+		} else if (result.equals("failed")){
 			AlertDialog.Builder builder = new AlertDialog.Builder(ContestActivity.this);
 			builder.setTitle("Thông báo");
 			builder.setMessage("Cập nhật kết quả thất bại. Bạn muốn cập nhật lại không?");
 			builder.setCancelable(false);
-			builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			builder.setPositiveButton("Có", new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialogInterface, int i) {
-					postResultTask.cancel(true);
-					postResultTask.execute();
+					new PostResultTask().execute();
 				}
 			});
-			builder.setNegativeButton("Trở lại", new DialogInterface.OnClickListener() {
+			builder.setNegativeButton("Không", new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialogInterface, int i) {
-					postResultTask.cancel(true);
 					showQuestion();
 				}
 			});
 			AlertDialog dialog = builder.create();
+			dialog.show();
+		} else {
+			AlertDialog dialog = new AlertDialog.Builder(ContestActivity.this)
+					.setTitle("Thông báo")
+					.setMessage("Không phản hồi từ server. Hãy chắc rằng bạn đang online.")
+					.setCancelable(false)
+					.setPositiveButton("Nộp lại", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialogInterface, int i) {
+							new PostResultTask().execute();
+						}
+					})
+					.setNegativeButton("Hủy", null).create();
+			dialog.show();
+
+		}
+	}
+
+	private void doAfterUpdateContacInfo(String s) {
+
+		if (s.equals("success")) {
+			AlertDialog dialog = new AlertDialog.Builder(ContestActivity.this)
+					.setTitle("Thông báo")
+					.setMessage("Cập nhật thành công")
+					.setCancelable(false)
+					.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialogInterface, int i) {
+							Intent intent = new Intent(ContestActivity.this, DashboardActivity.class);
+							intent.putExtra("exams_group_id", questions.get(0).getExamsGroup());
+							intent.putStringArrayListExtra("qg", qg);
+							startActivity(intent);
+							ContestActivity.this.finish();
+						}
+					})
+					.create();
 			dialog.show();
 		}
 	}
@@ -239,7 +425,6 @@ public class ContestActivity extends AppCompatActivity{
     	btnForward = findViewById(R.id.btn_forward);
     	btnFinish = findViewById(R.id.btn_finish);
     	tvCurrentQuestionIndex = findViewById(R.id.tv_current);
-    	tvCurrentQuestionText = findViewById(R.id.tv_question);
     	tvTimer = findViewById(R.id.tv_timer);
     	tvCorrect = findViewById(R.id.tv_correct);
     	tvIncorrect = findViewById(R.id.tv_incorrect);
@@ -247,7 +432,9 @@ public class ContestActivity extends AppCompatActivity{
     	rbtnChose2 = findViewById(R.id.radio_2);
     	rbtnChose3 = findViewById(R.id.radio_3);
     	rbtnChose4 = findViewById(R.id.radio_4);
-    	rbtnGroup = findViewById(R.id.radio_group);
+    	rbtnGroup = findViewById(R.id.radio_group1);
+    	rbtnGroup2 = findViewById(R.id.radio_group2);
+    	imgvQuestion = findViewById(R.id.img_question);
     }
 
     private int getChose() {
@@ -263,18 +450,9 @@ public class ContestActivity extends AppCompatActivity{
 		return 0;
 	}
 
-    private void resetChose() {
-    	rbtnChose1.setEnabled(true);
-    	rbtnChose2.setEnabled(true);
-    	rbtnChose3.setEnabled(true);
-    	rbtnChose4.setEnabled(true);
-    	rbtnGroup.clearCheck();
-    }
-
-   
     private void updateTime() {
-    	String minutes = String.valueOf(time / 60);
-    	String seconds = String.valueOf(time % 60);
+    	String minutes = String.valueOf(maxTime / 60);
+    	String seconds = String.valueOf(maxTime % 60);
 
     	if (minutes.length() == 1) minutes = "0" + minutes;
     	if (seconds.length() == 1) seconds = "0" + seconds;
@@ -285,11 +463,35 @@ public class ContestActivity extends AppCompatActivity{
 		}
     }
 
+    private void handleNextQuestion() {
+
+    	final ProgressDialog progressDialog = new ProgressDialog(ContestActivity.this);
+    	progressDialog.setTitle("");
+    	progressDialog.setMessage("Đang kiểm tra kết quả...");
+    	progressDialog.setCancelable(false);
+    	progressDialog.show();
+    	new Handler(new Handler.Callback() {
+			@Override
+			public boolean handleMessage(Message message) {
+				return false;
+			}
+		}).postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				if (!isFinish) {
+					progressDialog.dismiss();
+					showQuestion();
+					onStop();
+				}
+			}
+		}, 1000);
+	}
+
     private JSONArray createJSONArrayFromAnswerList() {
     	JSONArray jsonArray = new JSONArray();
     	int i = answers.size();
     	while (answers.size() < Values.NUM_OF_QUESTION) {
-    		answers.add(new Answer(questions.get(i).getId(), 0, 0));
+    		answers.add(new Answer(questions.get(i).getId(), Integer.parseInt(questions.get(i).getQuestionGroup()),0, 0));
     		i++;
 		}
     	for(i = 0; i < answers.size(); i++) {
@@ -309,20 +511,26 @@ public class ContestActivity extends AppCompatActivity{
 					@Override
 					public void onClick(DialogInterface dialogInterface, int i) {
 						isFinish = true;
-						postResultTask.execute();
-
+						btnForward.setEnabled(false);
+						if (getChose() != 0) {
+							if (getResult() == 1) correct++;
+							Answer answer = new Answer(questions.get(currentIndex).getId(), Integer.parseInt(questions.get(currentIndex).getQuestionGroup()), getResult(), time);
+							answers.add(answer);
+							time = 0;
+							//updateTime();
+							rbtnChose1.setEnabled(false);
+							rbtnChose2.setEnabled(false);
+							rbtnChose3.setEnabled(false);
+							rbtnChose4.setEnabled(false);
+						}
+						new PostResultTask().execute();
 					}
 				});
-				builder.setNegativeButton("Trở lại", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialogInterface, int i) {
-						postResultTask.cancel(true);
-					}
-				});
+				builder.setNegativeButton("Trở lại", null);
 				AlertDialog dialog = builder.create();
 				dialog.show();
 			} else {
-				postResultTask.execute();
+				new PostResultTask().execute();
 			}
 		}
 	};
@@ -336,46 +544,41 @@ public class ContestActivity extends AppCompatActivity{
 					AlertDialog.Builder builder = new AlertDialog.Builder(ContestActivity.this);
 					builder.setTitle("Thông báo");
 					builder.setMessage("Bạn cần chọn câu trả lời để tiếp tục.");
-					builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialogInterface, int i) {
-							// Do no thing
-						}
-					});
+					builder.setNegativeButton("OK", null);
 					AlertDialog dialog = builder.create();
 					dialog.show();
 				} else {
 					btnForward.setEnabled(false);
 					isFinish = true;
 					if (getResult() == 1) correct++;
-					Answer answer = new Answer(questions.get(currentIndex).getId(), getResult(), time);
+					Answer answer = new Answer(questions.get(currentIndex).getId(), Integer.parseInt(questions.get(currentIndex).getQuestionGroup()) ,getResult(), time);
 					answers.add(answer);
 					time = 0;
-					updateTime();
+					//updateTime();
+					rbtnChose1.setEnabled(false);
+					rbtnChose2.setEnabled(false);
+					rbtnChose3.setEnabled(false);
+					rbtnChose4.setEnabled(false);
 				}
 			} else {
 				if (getChose() == 0) {
 					AlertDialog.Builder builder = new AlertDialog.Builder(ContestActivity.this);
 					builder.setTitle("Thông báo");
 					builder.setMessage("Bạn cần chọn câu trả lời để tiếp tục.");
-					builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialogInterface, int i) {
-							// Do no thing
-						}
-					});
+					builder.setNegativeButton("OK", null);
 					AlertDialog dialog = builder.create();
 					dialog.show();
 				} else {
 					if (getResult() == 1) correct++;
-					Answer answer = new Answer(questions.get(currentIndex).getId(), getResult(), time);
+					Answer answer = new Answer(questions.get(currentIndex).getId(), Integer.parseInt(questions.get(currentIndex).getQuestionGroup()),getResult(), time);
 					answers.add(answer);
-					time = 0;
-					updateTime();
+					time = -1;
 					currentIndex++;
+					rbtnGroup.clearCheck();
+					rbtnGroup2.clearCheck();
+					handleNextQuestion();
 				}
 			}
-			showQuestion();
     	}
     };
 
@@ -388,10 +591,12 @@ public class ContestActivity extends AppCompatActivity{
         protected void onPreExecute() {
             super.onPreExecute();
             progressDialog = new ProgressDialog(ContestActivity.this);
+			progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             progressDialog.setTitle("");
             progressDialog.setMessage("Đang tải câu hỏi...");
             progressDialog.setCancelable(false);
             progressDialog.show();
+            onLoadQuestion(progressDialog);
         }
 
         @Override
@@ -418,12 +623,10 @@ public class ContestActivity extends AppCompatActivity{
         		return new JSONArray(sb.toString());
                 
         	} catch(IOException e) {
-        		e.printStackTrace();
+        		return new JSONArray();
         	} catch(JSONException e) {
-        		e.printStackTrace();
+        		return new JSONArray();
         	}
-
-            return null;
         }
 
         @Override
@@ -433,48 +636,55 @@ public class ContestActivity extends AppCompatActivity{
             if (progressDialog.isShowing()) {
             	progressDialog.dismiss();
             }
-
-            if (jsonArray.length() < Values.NUM_OF_QUESTION) {
+			questions = new ArrayList<>();
+			answers = new ArrayList<>();
+			qg = new ArrayList<>();
+			handlerLoadQuestion.removeCallbacksAndMessages(null);
+            if (jsonArray.length() < Values.NUM_OF_QUESTION || jsonArray.isNull(0)) {
 
             	AlertDialog.Builder builder = new AlertDialog.Builder(ContestActivity.this);
             	builder.setTitle("Thông báo");
-            	builder.setMessage("Tải dữ liệu thất bại, bạn muốn tải lại không?");
-            	builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            	builder.setMessage("Tải dữ liệu thất bại. Hãy chắc rằng bạn đang online.");
+            	builder.setCancelable(false);
+            	builder.setPositiveButton("Tải lại", new DialogInterface.OnClickListener() {
             		@Override
             		public void onClick(DialogInterface dialogInterface, int i) {
-
+						questions.clear();
+						answers.clear();
+            			isLoadQuestion = true;
+						new LoadQuestionTask().execute();
             		}
             	});
-            	builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            		@Override
-            		public void onClick(DialogInterface dialogInterface, int i) {
-            			
-            		}
-            	});
-
+            	builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialogInterface, int i) {
+						Intent intent = new Intent(ContestActivity.this, ChoserActivity.class);
+						startActivity(intent);
+						ContestActivity.this.finish();
+					}
+				});
             	AlertDialog dialog = builder.create();
             	dialog.show();
             } else {
             	try {
-            		questions = new ArrayList<>();
-					answers = new ArrayList<>();				
             		for(int i = 0; i < Values.NUM_OF_QUESTION; i++) {
             			JSONObject object = jsonArray.getJSONObject(i);
             			Question q = new Question();
             			q.setId(object.getInt("question_id"));
             			q.setQuestion(object.getString("question"));
-            			q.setChose1(object.getString("chose1"));
-            			q.setChose2(object.getString("chose2"));
-            			q.setChose3(object.getString("chose3"));
-            			q.setChose4(object.getString("chose4"));
+            			q.setQuestionGroup(object.getString("question_group_id"));
             			q.setExamsGroup(String.valueOf(object.getInt("exam_group_id")));
             			q.setCorrectChose(object.getInt("chose_correct"));
-            			questions.add(q);
+            			String s = q.getId() + "," + q.getQuestionGroup();
+						Log.e("Q", q.getQuestion().toString());
+						questions.add(q);
+            			qg.add(s);
+            			progressDialog.incrementProgressBy(5);
             		}
+					onContest();
             	} catch (JSONException e) {
             		e.printStackTrace();
             	}
-            	onContest();         	
             }         
         }
     }
@@ -509,7 +719,7 @@ public class ContestActivity extends AppCompatActivity{
     			StringBuffer data = new StringBuffer();
 
     			data.append(URLEncoder.encode("exams_group_id", "UTF-8") + "=" + examsGroupId);
-    			data.append("&" + URLEncoder.encode("icon_user_menu", "UTF-8") + "=" + user);
+    			data.append("&" + URLEncoder.encode("user", "UTF-8") + "=" + user);
     			data.append("&" + URLEncoder.encode("data", "UTF-8") + "=" + dataArray);
 
     			String http = Values.DB_HOST + "/post-result";
@@ -531,10 +741,8 @@ public class ContestActivity extends AppCompatActivity{
 				return response;
 
 			} catch (IOException e) {
-				e.printStackTrace();
+				return "time out";
 			}
-
-    		return "hehe";
 		}
 
 		@Override
@@ -544,12 +752,113 @@ public class ContestActivity extends AppCompatActivity{
 			if (progressDialog.isShowing()) {
 				progressDialog.dismiss();
 			}
-
-
 			doAfterPostResult(s);
-
-
 
 		}
 	}
+
+	private class ImageDownLoadTask extends AsyncTask<Void, Void, Bitmap>{
+
+		// Url of image
+		private String url;
+
+		// ImageView to set source
+		private ImageView imageView;
+
+		public ImageDownLoadTask(String url, ImageView imageView) {
+			this.url = Values.RESOURCE_HOST + "/" + url;
+			this.imageView = imageView;
+		}
+
+		@Override
+		protected Bitmap doInBackground(Void... params) {
+
+			try{
+				// Create url object
+				URL url = new URL(this.url);
+
+				// Open connection
+				HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+				connection.setDoInput(true);
+				connection.connect();
+
+				// Read data from server
+				InputStream inputStream = connection.getInputStream();
+
+				// Convert data to bitmap
+				Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+
+				return bitmap;
+
+			}catch(IOException e){
+				e.printStackTrace();
+			}
+
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Bitmap bitmap) {
+			imageView.setImageBitmap(bitmap);
+
+		}
+	}
+
+	private class PostEmailAndPhone extends AsyncTask<String, Void, String> {
+
+
+    	ProgressDialog dialog = null;
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			dialog = new ProgressDialog(ContestActivity.this);
+			dialog.setTitle("");
+			dialog.setMessage("Đang cập nhật...");
+			dialog.setCancelable(false);
+			dialog.show();
+		}
+
+		@Override
+		protected String doInBackground(String... strings) {
+
+			URLConnection connection = null;
+			BufferedReader reader = null;
+
+			try {
+				String data = "";
+				data += URLEncoder.encode("email","UTF-8") + "=" + URLEncoder.encode(strings[0], "UTF-8");
+				data += "&" + URLEncoder.encode("phone","UTF-8") + "=" + URLEncoder.encode(strings[1], "UTF-8");
+
+				URL url = new URL(Values.DB_HOST + "/update-contact-info");
+				connection = url.openConnection();
+				connection.setDoOutput(true);
+				OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+				writer.write(data);
+				writer.flush();
+
+				reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+				String reponse = null;
+				reponse = reader.readLine();
+
+				return reponse;
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(String s) {
+			if (dialog.isShowing()) {
+				dialog.dismiss();
+			}
+
+			doAfterUpdateContacInfo(s);
+		}
+	}
+
 }

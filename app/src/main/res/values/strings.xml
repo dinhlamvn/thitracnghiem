@@ -6,7 +6,7 @@
     <string name="empty_text">""</string>
     <string name="no_account_text">Bạn chưa có tài khoản?</string>
     <string name="result_text">KẾT QUẢ</string>
-    <string name="suggest_text">Click vào câu hỏi để xem chi tiết</string>
+    <string name="suggest_text">Click vào câu hỏi để xem chi tiết và hướng dẫn</string>
     <string name="test_text">This is a text view</string>
     <string name="resgister_textview_title">ĐĂNG KÝ TÀI KHOẢN</string>
     <string name="test_radio_button">This is a radio button</string>
@@ -48,6 +48,8 @@
     <string name="register_7">Tỉnh</string>
     <string name="register_8">Quận/huyện</string>
     <string name="register_9">Phường/xã</string>
+    <string name="register_10">Địa chỉ email</string>
+    <string name="register_11">Số điện thoại</string>
     <!-- End hint value for register layout -->
 
 
@@ -55,13 +57,50 @@
     <string name="menu_item_1">Thông tin cá nhân</string>
     <string name="menu_item_2">Đăng xuất</string>
     <!-- End string value for menu item -->
-    
+
+    <!-- Start string value for dialog change password -->
+    <string name="old_password">Mật khẩu cũ</string>
+    <string name="new_password">Mật khẩu mới</string>
+    <string name="renew_password">Xác nhận mật khẩu mới</string>
+    <!-- End string value for dialog change password -->
+
+    <!-- Start string value for 4 chose -->
+    <string name="chose1">Đáp án A</string>
+    <string name="chose2">Đáp án B</string>
+    <string name="chose3">Đáp án C</string>
+    <string name="chose4">Đáp án D</string>
+    <!-- End string value for 4 chose -->
     
     
     <string name="introduce">
-        Đây là ứng dụng thi trắc nghiệm thuộc Khoa Khoa học cơ bản của Đại học
-        Trà Vinh.
+        \tNhằm hỗ trợ cho các bạn học sinh làm quen với hình thức thi trắc nghiệm của kỳ thi tốt nghiệp THPT quốc gia,
+        Khoa Khoa học Cơ bản thuộc trường Đại học Trà Vinh xin giới thiệu ứng dụng « Luyện thi Toán PTTH cùng TVU ».
+        \n
+        \tỨng dụng này cung cấp các bộ đề câu hỏi trắc nghiệm môn Toán, hướng dẫn giải và điều đặc biệt là « hoàn toàn miễn phí ».
+        Để tạo thêm hứng thú học tập, các bạn học sinh có điểm kiểm tra trực tuyến ≥ 15 điểm (trên tổng số 20 câu hỏi)
+        sẽ được mời tham dự một kỳ thi thử tại trường Đại học Trà Vinh.
+        \n
+        \tHình thức của kỳ thi (bao gồm: quy cách tổ chức, số lượng câu hỏi và thời gian làm bài) sẽ được mô phỏng tương tự
+        như kỳ thi quốc gia. Hai bạn học sinh có số điểm cao nhất sẽ được trao tặng 2 suất học bổng tương ứng với
+        <b>Giải nhất – 2.000.000 VNĐ và Giải nhì – 1.000.000 VNĐ. </b>
+        \n
+        \tCuối cùng, ứng dụng « Luyện thi Toán PTTH cùng TVU » sẽ khó thành hiện thực nếu không có sự hỗ trợ của quý Thầy Cô
+        và các bạn sinh viên của trường Đại học Trà Vinh. Chúng tôi xin gửi lời cám chân thành đến Ban Phát triển hệ thống CNTT
+        trường Đại học Trà Vinh và các sinh viên Ngô Quốc Anh, Lâm Công Đỉnh, Mai Ngọc Thanh Tân đã thiết kế và xây dựng website
+        và ứng dụng.
+        \n
+        \tChúng tôi cũng xin gửi lời cám sâu sắc đến quý Thầy Cô Bộ môn Toán ứng dụng đã dành nhiều thời gian xây dựng ngân hàng
+        câu trắc nghiệm.
+        \n
+        \tTrong quá trình xây dựng website và ứng dụng sẽ khó tránh khỏi một số thiếu sót ngoài ý muốn.
+        Vì vậy, tất cả các ý kiến đóng góp của quý Thầy Cô, các bậc phụ huynh và học sinh đều được trân trọng, và chúng tôi
+        xin ghi nhận qua địa chỉ: vpkcoban@tvu.edu.vn
     </string>
+
+    <string name="TODO">This is a image</string>
+
+    <string name="guide">Hướng dẫn giải:</string>
+    <string name="question">Câu hỏi:</string>
 
 
 </resources>

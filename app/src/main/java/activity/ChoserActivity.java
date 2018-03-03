@@ -30,12 +30,6 @@ public class ChoserActivity extends AppCompatActivity {
         setContentView(R.layout.activity_choser);
         initComponents();
 
-        if (Values.CURRENT_USER.equals("")) {
-            Intent intent = new Intent(ChoserActivity.this, LoginActivity.class);
-            startActivity(intent);
-            ChoserActivity.this.finish();
-        }
-
         btnRandom.setOnClickListener(btnRandom_Clicked);
         btnExist.setOnClickListener(btnExist_Clicked);
 
@@ -73,6 +67,7 @@ public class ChoserActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    
     private void initComponents() {
     	btnRandom = findViewById(R.id.btn_random);
     	btnExist = findViewById(R.id.btn_exist);

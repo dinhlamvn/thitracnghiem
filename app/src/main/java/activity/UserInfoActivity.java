@@ -1,6 +1,7 @@
 package activity;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -76,7 +78,6 @@ public class UserInfoActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        super.onStart();
         if (Values.CURRENT_USER.equals("")) {
             Intent intent = new Intent(UserInfoActivity.this, LoginActivity.class);
             startActivity(intent);
@@ -129,6 +130,25 @@ public class UserInfoActivity extends AppCompatActivity {
         UserInfoActivity.this.finish();
     }
 
+    private String[] getAddressDetail(String s) {
+        String[] result = {"", "", ""};
+        char[] x = s.toCharArray();
+        int[] commaPosition = new int[2];
+        int index = 0;
+
+        for (int i = 0; i < x.length; i++) {
+            if (x[i] == ',') {
+                commaPosition[index] = i;
+                index++;
+            }
+        }
+
+        for (int i = 0; i < commaPosition[0]; i++) result[0] += x[i];
+        for (int i = commaPosition[0] + 1; i < commaPosition[1]; i++) result[1] += x[i];
+        for (int i = commaPosition[1] + 1; i < x.length; i++) result[2] += x[i];
+        return result;
+    }
+
 
     private void showInfo(JSONObject object) {
 
@@ -139,7 +159,7 @@ public class UserInfoActivity extends AppCompatActivity {
             textIdentity.setText(object.getString("user_indentity_card"));
             textSchool.setText(object.getString("user_school"));
             textClasses.setText(object.getString("user_classes"));
-            String[] address = object.getString("user_address").split(",");
+            String[] address = getAddressDetail(object.getString("user_address"));
             textProvince.setText((!address[2].equals(" ")) ? address[2]:"");
             textDistrict.setText((!address[1].equals(" ")) ? address[1]:"");
             textVillage.setText((!address[0].equals(" ")) ? address[0]:"");
@@ -246,11 +266,62 @@ public class UserInfoActivity extends AppCompatActivity {
 
     }
 
+    private void showMessageDialog(String title, String message, String chose) {
+        AlertDialog dialog = new AlertDialog.Builder(UserInfoActivity.this)
+                .setTitle(title)
+                .setMessage(message)
+                .setCancelable(true)
+                .setNegativeButton(chose, null)
+                .create();
+        dialog.show();
+    }
+
+    private void createChangePasswordDialog() {
+        final Dialog dialog = new Dialog(UserInfoActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCancelable(false);
+        dialog.setContentView(R.layout.dialog_change_password);
+
+
+        dialog.show();
+
+        final EditText edtOldPassword = dialog.findViewById(R.id.edt_oldpass);
+        final EditText edtNewPassword = dialog.findViewById(R.id.edt_newpass);
+        final EditText edtRenewPassword = dialog.findViewById(R.id.edt_renewpass);
+        final Button btnSave = dialog.findViewById(R.id.btn_save);
+        final Button btnExit = dialog.findViewById(R.id.btn_exit);
+
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String a = edtOldPassword.getText().toString();
+                String b = edtNewPassword.getText().toString();
+                String c = edtRenewPassword.getText().toString();
+
+                if (a.isEmpty() || b.isEmpty() || c.isEmpty()) {
+                    showMessageDialog("Thông báo", "Bạn cần nhập đủ thông tin", "OK");
+                } else if (!b.equals(c)) {
+                    showMessageDialog("Thông báo", "Mật khẩu mới chưa khớp", "OK");
+                } else {
+                    new ChangePasswordTask().execute(a, b);
+                }
+
+            }
+        });
+
+        btnExit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+    }
+
 
     View.OnClickListener btnSave_Clicked = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            if (textName.getText().toString().equals("")) {
+            if (textName.getText().toString().trim().equals("")) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(UserInfoActivity.this)
                     .setTitle("Thông báo")
                     .setMessage("Tên còn trống.")
@@ -266,8 +337,7 @@ public class UserInfoActivity extends AppCompatActivity {
         @Override
         public void onClick(View view) {
             // Call change password
-            AlertDialog dialog = createDialogChangePassword("");
-            dialog.show();
+            createChangePasswordDialog();
         }
     };
 

@@ -105,32 +105,35 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/tv_question"
+                    <ImageView
+                        android:id="@+id/img_question"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
+                        android:layout_marginBottom="5dp"
                         android:layout_marginTop="5dp"
-                        android:padding="5dp"
-                        android:text="@string/empty_text"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
+                        android:adjustViewBounds="true"
+                        android:background="@drawable/question_border"
+                        android:contentDescription="@string/TODO"
+                        android:cropToPadding="true"
+                        app:srcCompat="@drawable/yyyyy" />
 
                     <RadioGroup
-                        android:id="@+id/radio_group"
+                        android:id="@+id/radio_group1"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent">
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
 
                         <RadioButton
                             android:id="@+id/radio_1"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="2dp"
+                            android:layout_marginEnd="2dp"
                             android:layout_weight="1"
                             android:background="@drawable/chose_border"
                             android:paddingBottom="10dp"
                             android:paddingTop="10dp"
-                            android:text="@string/empty_text"
+                            android:text="@string/chose1"
                             android:textSize="15sp" />
 
                         <RadioButton
@@ -138,11 +141,32 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="2dp"
+                            android:layout_marginStart="2dp"
                             android:layout_weight="1"
                             android:background="@drawable/chose_border"
                             android:paddingBottom="10dp"
                             android:paddingTop="10dp"
-                            android:text="@string/empty_text"
+                            android:text="@string/chose2"
+                            android:textSize="15sp" />
+
+                    </RadioGroup>
+
+                    <RadioGroup
+                        android:id="@+id/radio_group2"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/radio_4"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="2dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/chose_border"
+                            android:paddingBottom="10dp"
+                            android:paddingTop="10dp"
+                            android:text="@string/chose3"
                             android:textSize="15sp" />
 
                         <RadioButton
@@ -150,23 +174,14 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="2dp"
+                            android:layout_marginStart="2dp"
                             android:layout_weight="1"
                             android:background="@drawable/chose_border"
                             android:paddingBottom="10dp"
                             android:paddingTop="10dp"
-                            android:text="@string/empty_text"
+                            android:text="@string/chose4"
                             android:textSize="15sp" />
 
-                        <RadioButton
-                            android:id="@+id/radio_4"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="@drawable/chose_border"
-                            android:paddingBottom="10dp"
-                            android:paddingTop="10dp"
-                            android:text="@string/empty_text"
-                            android:textSize="15sp" />
                     </RadioGroup>
                 </LinearLayout>
 
